@@ -1,6 +1,8 @@
 # VideoFlow Player
 
-Reprodutor web com visual cinematográfico para importar playlists M3U por URL ou arquivo local.
+Página web de distribuição do VideoFlow Player para Android e TV Box.
+
+O site serve apenas como página de download e apresentação. A importação do link M3U e o anexo do arquivo de playlist devem acontecer dentro do aplicativo instalado.
 
 ## Executar
 
@@ -10,15 +12,10 @@ npm start
 
 O servidor escuta em `0.0.0.0:3000` ou na porta definida por `PORT`.
 
-Playlists remotas podem ter até **50 MB** por padrão. Para uma instalação com playlists ainda maiores, ajuste `MAX_PLAYLIST_MB` (aceito entre 5 e 200) e, se necessário, `PLAYLIST_TIMEOUT_MS` (entre 15 e 180 segundos).
+## Próximo passo para o download
 
-## Funcionalidades
+O botão de download está preparado para receber o APK quando o binário do aplicativo Android for gerado. O caminho esperado é `/downloads/videoflow-player.apk`.
 
-- Importação de playlist M3U por link HTTP/HTTPS.
-- Importação de arquivo `.m3u`, `.m3u8` ou `.txt`.
-- Parser de `#EXTINF`, grupos, nomes, logos e identificadores de canal.
-- Busca, filtro por grupo e contagem de itens.
-- Player HTML5 com controles nativos, tela cheia e suporte conforme o navegador.
-- Proxy de playlist remota em `/api/playlist?url=...` para reduzir problemas de CORS.
+## Backend preservado
 
-Streams HLS (`.m3u8`) dependem do suporte do navegador. No Chrome/Android, alguns streams precisam de uma camada HLS compatível ou de um formato que o navegador consiga reproduzir nativamente.
+A rota `/api/playlist` continua disponível no projeto para o futuro aplicativo, com limite remoto padrão de 50 MB e ajuste por `MAX_PLAYLIST_MB` entre 5 e 200 MB. A página pública não exibe mais formulário, biblioteca ou player.
