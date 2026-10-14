@@ -1,0 +1,14 @@
+{
+  "name": "videoflow-player",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reprodutor de vídeos com importação de playlists M3U por link ou arquivo.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

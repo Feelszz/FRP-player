@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#151116" />
+    <meta name="description" content="VideoFlow Player — importe sua playlist M3U e assista aos seus vídeos." />
+    <title>VideoFlow Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="VideoFlow Player, página inicial">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span class="brand-copy">
+            <strong>VideoFlow</strong>
+            <small>PLAYER</small>
+          </span>
+        </a>
+        <div class="topbar-status" id="connectionStatus"><span class="status-dot"></span>Pronto para importar</div>
+      </header>
+
+      <main>
+        <section class="hero-section">
+          <div class="hero-copy">
+            <p class="eyebrow">SUA SESSÃO DE CINEMA</p>
+            <h1>Seu conteúdo.<br /><em>Seu ritmo.</em></h1>
+            <p class="hero-description">Importe uma playlist M3U e transforme qualquer tela em uma central de vídeo elegante e simples de navegar.</p>
+          </div>
+          <div class="hero-stamp" aria-hidden="true">
+            <span class="stamp-line"></span>
+            <span>PLAY<br />ANYWHERE</span>
+          </div>
+        </section>
+
+        <section class="import-card" aria-labelledby="importTitle">
+          <div class="import-heading">
+            <div class="section-number">01</div>
+            <div>
+              <p class="eyebrow">FONTE DA PLAYLIST</p>
+              <h2 id="importTitle">Traga sua programação</h2>
+            </div>
+          </div>
+          <div class="import-actions">
+            <form id="urlForm" class="url-form">
+              <label class="sr-only" for="playlistUrl">Link da playlist M3U</label>
+              <span class="input-prefix">URL</span>
+              <input id="playlistUrl" type="url" inputmode="url" placeholder="https://seu-servidor.com/playlist.m3u" autocomplete="off" />
+              <button class="button button-primary" type="submit" id="urlButton"><span>Importar link</span><b aria-hidden="true">↗</b></button>
+            </form>
+            <div class="import-divider"><span>ou</span></div>
+            <label class="file-drop" for="playlistFile">
+              <input id="playlistFile" type="file" accept=".m3u,.m3u8,.txt,audio/x-mpegurl,application/vnd.apple.mpegurl" />
+              <span class="file-icon" aria-hidden="true">↥</span>
+              <span><strong>Carregar arquivo M3U</strong><small>Arraste aqui ou escolha um arquivo local</small></span>
+              <span class="file-arrow" aria-hidden="true">→</span>
+            </label>
+          </div>
+          <div class="import-feedback" id="importFeedback" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="workspace" aria-label="Player e biblioteca">
+          <div class="player-column">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">02 / AGORA EM EXIBIÇÃO</p>
+                <h2 id="nowPlayingTitle">Nenhum vídeo selecionado</h2>
+              </div>
+              <span class="live-pill" id="livePill"><i></i>Ao vivo</span>
+            </div>
+            <div class="video-frame" id="videoFrame">
+              <video id="videoPlayer" controls playsinline preload="metadata" aria-label="Player de vídeo"></video>
+              <div class="video-empty" id="videoEmpty">
+                <div class="empty-orbit"><span></span><span></span><span></span></div>
+                <p>Escolha um item da sua biblioteca</p>
+                <small>Seu próximo vídeo aparece aqui</small>
+              </div>
+              <div class="video-error" id="videoError" hidden>
+                <strong>Este stream não pôde ser reproduzido</strong>
+                <span id="videoErrorMessage">Confira se o link está disponível e se o navegador suporta este formato.</span>
+              </div>
+            </div>
+            <div class="now-playing-meta" id="nowPlayingMeta">
+              <div class="meta-channel"><span class="meta-live-dot"></span><span id="nowPlayingGroup">Aguardando playlist</span></div>
+              <span class="meta-url" id="nowPlayingUrl">—</span>
+            </div>
+          </div>
+
+          <aside class="library-panel" aria-labelledby="libraryTitle">
+            <div class="library-heading">
+              <div>
+                <p class="eyebrow">03 / SUA BIBLIOTECA</p>
+                <h2 id="libraryTitle">Playlist</h2>
+              </div>
+              <span class="item-count" id="itemCount">0 itens</span>
+            </div>
+            <div class="library-tools">
+              <label class="search-box" for="searchInput">
+                <span aria-hidden="true">⌕</span>
+                <input id="searchInput" type="search" placeholder="Buscar na playlist" disabled />
+              </label>
+              <label class="sr-only" for="groupFilter">Filtrar por grupo</label>
+              <select id="groupFilter" disabled>
+                <option value="all">Todos os grupos</option>
+              </select>
+            </div>
+            <div class="playlist-list" id="playlistList">
+              <div class="library-empty" id="libraryEmpty">
+                <span class="empty-stack" aria-hidden="true"><i></i><i></i><i></i></span>
+                <strong>Sua playlist está vazia</strong>
+                <p>Importe um link ou arquivo M3U para começar a assistir.</p>
+              </div>
+            </div>
+            <div class="library-footer" id="libraryFooter" hidden>
+              <span><b class="footer-dot"></b><span id="visibleCount">0</span> exibidos</span>
+              <button class="text-button" type="button" id="clearButton">Limpar playlist</button>
+            </div>
+          </aside>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>VideoFlow Player <b>·</b> Reprodução simples, em qualquer tela.</span>
+        <span>Formato M3U <b>·</b> Navegador com suporte a vídeo</span>
+      </footer>
+    </div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
