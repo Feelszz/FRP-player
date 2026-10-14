@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, 'public');
 const port = Number(process.env.PORT || 3000);
-const maxPlaylistBytes = 5 * 1024 * 1024;
+const maxPlaylistMb = Math.min(Math.max(Number(process.env.MAX_PLAYLIST_MB || 50), 5), 200);
+const maxPlaylistBytes = maxPlaylistMb * 1024 * 1024;
+const playlistTimeoutMs = Math.min(Math.max(Number(process.env.PLAYLIST_TIMEOUT_MS || 60_000), 15_000), 180_000);
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -41,7 +43,7 @@ function isAllowedPlaylistUrl(value) {
 
 async function fetchPlaylist(url) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
+  const timeout = setTimeout(() => controller.abort(), playlistTimeoutMs);
 
   try {
     const upstream = await fetch(url, {
@@ -59,12 +61,12 @@ async function fetchPlaylist(url) {
 
     const length = Number(upstream.headers.get('content-length') || 0);
     if (length > maxPlaylistBytes) {
-      throw new Error('A playlist é maior que o limite de 5 MB.');
+      throw new Error(`A playlist é maior que o limite de ${maxPlaylistMb} MB.`);
     }
 
     const text = await upstream.text();
     if (Buffer.byteLength(text, 'utf8') > maxPlaylistBytes) {
-      throw new Error('A playlist é maior que o limite de 5 MB.');
+      throw new Error(`A playlist é maior que o limite de ${maxPlaylistMb} MB.`);
     }
 
     return { text, finalUrl: upstream.url || url };

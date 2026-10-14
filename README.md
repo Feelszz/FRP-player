@@ -10,6 +10,8 @@ npm start
 
 O servidor escuta em `0.0.0.0:3000` ou na porta definida por `PORT`.
 
+Playlists remotas podem ter até **50 MB** por padrão. Para uma instalação com playlists ainda maiores, ajuste `MAX_PLAYLIST_MB` (aceito entre 5 e 200) e, se necessário, `PLAYLIST_TIMEOUT_MS` (entre 15 e 180 segundos).
+
 ## Funcionalidades
 
 - Importação de playlist M3U por link HTTP/HTTPS.
