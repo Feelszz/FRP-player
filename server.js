@@ -92,7 +92,7 @@ async function serveStatic(request, response, pathname) {
     response.writeHead(200, {
       'Content-Type': mimeTypes[extension] || 'application/octet-stream',
       'Cache-Control': extension === '.html' ? 'no-cache' : 'public, max-age=3600',
-      ...(extension === '.apk' ? { 'Content-Disposition': 'attachment; filename="videoflow-player.apk"' } : {}),
+      ...(extension === '.apk' ? { 'Content-Disposition': 'attachment; filename="fpr-player.apk"' } : {}),
       'X-Content-Type-Options': 'nosniff'
     });
     response.end(contents);
