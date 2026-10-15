@@ -14,7 +14,7 @@ O servidor escuta em `0.0.0.0:3000` ou na porta definida por `PORT`.
 
 ## Próximo passo para o download
 
-O botão de download está preparado para receber o APK quando o binário do aplicativo Android for gerado. O caminho esperado é `/downloads/videoflow-player.apk`.
+O APK debug gerado pelo GitHub Actions está disponível em `/downloads/videoflow-player.apk` e é oferecido pelo botão da página pública.
 
 ## Backend preservado
 

@@ -20,7 +20,8 @@ const mimeTypes = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.apk': 'application/vnd.android.package-archive'
 };
 
 function sendJson(response, status, payload) {
@@ -91,6 +92,7 @@ async function serveStatic(request, response, pathname) {
     response.writeHead(200, {
       'Content-Type': mimeTypes[extension] || 'application/octet-stream',
       'Cache-Control': extension === '.html' ? 'no-cache' : 'public, max-age=3600',
+      ...(extension === '.apk' ? { 'Content-Disposition': 'attachment; filename="videoflow-player.apk"' } : {}),
       'X-Content-Type-Options': 'nosniff'
     });
     response.end(contents);
