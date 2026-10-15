@@ -17,6 +17,10 @@ button:disabled { cursor:not-allowed; opacity:.75; }
 .brand-copy strong { font-size:16px; font-weight:800; }
 .brand-copy small { color:var(--accent-soft); font-size:7px; letter-spacing:.28em; margin-top:5px; font-weight:800; }
 .topbar-label { color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.14em; }
+.public-notice { display:flex; align-items:center; gap:12px; margin:20px 0 0; padding:13px 16px; border:1px solid rgba(233,106,58,.38); border-radius:8px; background:rgba(233,106,58,.10); color:var(--muted-strong); }
+.public-notice p { margin:0; font-size:11px; line-height:1.55; }
+.public-notice strong { color:var(--accent-soft); }
+.notice-icon { flex:0 0 22px; width:22px; height:22px; display:grid; place-items:center; border:1px solid var(--accent); border-radius:50%; color:var(--accent-soft); font-size:12px; font-weight:800; }
 .download-page { min-height:calc(100vh - 140px); }
 .hero-section { min-height:485px; display:flex; justify-content:space-between; align-items:center; gap:60px; padding:72px 3px 65px; }
 .eyebrow { margin:0 0 13px; color:var(--accent-soft); font-size:10px; line-height:1; letter-spacing:.18em; font-weight:800; }
