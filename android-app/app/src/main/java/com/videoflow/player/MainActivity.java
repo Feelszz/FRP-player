@@ -50,11 +50,20 @@ public class MainActivity extends Activity {
             intent.setDataAndType(mediaUri, mime);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             try {
-                startActivity(intent);
-                return true;
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                    return true;
+                }
+                Intent generic = new Intent(Intent.ACTION_VIEW, mediaUri);
+                generic.setDataAndType(mediaUri, "video/*");
+                if (generic.resolveActivity(getPackageManager()) != null) {
+                    startActivity(generic);
+                    return true;
+                }
             } catch (ActivityNotFoundException error) {
-                return false;
+                // Fall through to the WebView player when no native handler accepts the URL.
             }
+            return false;
         }
     }
 }
