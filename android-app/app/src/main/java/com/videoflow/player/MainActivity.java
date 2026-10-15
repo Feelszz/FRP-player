@@ -13,9 +13,11 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
+    private WebView webView;
+
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
-        WebView webView = new WebView(this);
+        webView = new WebView(this);
         webView.setBackgroundColor(0xFF151116);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -30,6 +32,16 @@ public class MainActivity extends Activity {
         setContentView(webView);
     }
 
+    @Override public void onBackPressed() {
+        if (webView == null) {
+            super.onBackPressed();
+            return;
+        }
+        webView.evaluateJavascript("window.fprHandleBack ? window.fprHandleBack() : false", value -> {
+            if ("false".equals(value) || "null".equals(value)) super.onBackPressed();
+        });
+    }
+
     private final class DeviceBridge {
         @JavascriptInterface
         public String getDeviceId() {
@@ -40,28 +52,30 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean openNativePlayer(String url) {
-            Uri mediaUri = Uri.parse(url == null ? "" : url);
+            if (url == null || url.trim().isEmpty()) return false;
+            Uri mediaUri = Uri.parse(url.trim());
             String scheme = mediaUri.getScheme();
             if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) return false;
             String path = mediaUri.getPath() == null ? "" : mediaUri.getPath().toLowerCase(java.util.Locale.ROOT);
             String mime = path.endsWith(".m3u8") ? "application/vnd.apple.mpegurl"
                     : path.endsWith(".ts") ? "video/mp2t" : "video/*";
-            Intent intent = new Intent(Intent.ACTION_VIEW, mediaUri);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(mediaUri, mime);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             try {
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
                     return true;
                 }
-                Intent generic = new Intent(Intent.ACTION_VIEW, mediaUri);
+                Intent generic = new Intent(Intent.ACTION_VIEW);
                 generic.setDataAndType(mediaUri, "video/*");
+                generic.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 if (generic.resolveActivity(getPackageManager()) != null) {
                     startActivity(generic);
                     return true;
                 }
             } catch (ActivityNotFoundException error) {
-                // Fall through to the WebView player when no native handler accepts the URL.
+                // O WebView continua sendo a alternativa quando não há player instalado.
             }
             return false;
         }
