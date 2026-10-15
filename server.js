@@ -28,6 +28,9 @@ function sendJson(response, status, payload) {
   response.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'X-Content-Type-Options': 'nosniff'
   });
   response.end(JSON.stringify(payload));
@@ -103,6 +106,16 @@ async function serveStatic(request, response, pathname) {
 
 const server = createServer(async (request, response) => {
   const requestUrl = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+
+  if (request.method === 'OPTIONS' && requestUrl.pathname.startsWith('/api/')) {
+    response.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+    response.end();
+    return;
+  }
 
   if (request.method === 'GET' && requestUrl.pathname === '/api/health') {
     sendJson(response, 200, { ok: true, service: 'videoflow-player' });
