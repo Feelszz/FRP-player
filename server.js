@@ -9,7 +9,7 @@ const publicDir = path.join(__dirname, 'public');
 const port = Number(process.env.PORT || 3000);
 const maxPlaylistMb = Math.min(Math.max(Number(process.env.MAX_PLAYLIST_MB || 50), 5), 200);
 const maxPlaylistBytes = maxPlaylistMb * 1024 * 1024;
-const playlistTimeoutMs = Math.min(Math.max(Number(process.env.PLAYLIST_TIMEOUT_MS || 60_000), 15_000), 180_000);
+const playlistTimeoutMs = Math.min(Math.max(Number(process.env.PLAYLIST_TIMEOUT_MS || 180_000), 15_000), 300_000);
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -55,7 +55,8 @@ async function fetchPlaylist(url) {
       redirect: 'follow',
       headers: {
         'Accept': 'application/x-mpegURL, application/vnd.apple.mpegurl, text/plain, */*',
-        'User-Agent': 'VideoFlow-Player/1.0'
+        'Accept-Encoding': 'gzip, deflate',
+        'User-Agent': 'FPR-Player/1.0'
       }
     });
 
