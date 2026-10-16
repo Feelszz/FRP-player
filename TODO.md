@@ -8,15 +8,16 @@
 - [x] Preparar um wrapper iOS em Swift/SwiftUI com `WKWebView`, reutilizando o núcleo HTML/CSS/JavaScript do Android.
 - [x] Configurar reprodução inline e compatibilidade com streams HTML5/HLS no iPhone.
 - [x] Documentar sincronização do núcleo, ATS, assinatura e distribuição oficial.
-- [ ] Compilar e assinar o IPA em macOS/Xcode com uma conta Apple Developer.
+- [ ] Compilar e assinar o IPA nativo em macOS/Xcode com uma conta Apple Developer.
 - [ ] Publicar em App Store ou TestFlight e registrar a URL oficial de distribuição.
 
 ## Site oficial de download
 - [x] Disponibilizar o APK Android real para celulares Android, Android TV e TV Box.
 - [x] Apresentar uma opção visual separada para iPhone/iOS.
 - [x] Detectar Android, iPhone/iPad e computador, destacando a plataforma provável e permitindo seleção manual.
-- [x] Não oferecer APK para iOS e não criar URL fictícia de App Store/TestFlight.
-- [ ] Ativar o botão iOS somente depois que a URL oficial de distribuição assinada estiver configurada.
+- [x] Não oferecer APK para iOS nem criar URL fictícia de App Store/TestFlight.
+- [x] Disponibilizar `/iphone/` como versão web compatível e instalável pelo Safari, com o mesmo núcleo do player.
+- [ ] Ativar uma distribuição nativa iOS somente depois que a URL oficial assinada estiver configurada.
 
 ## Distribuição e conformidade
 - [ ] Configurar identidade Apple, certificados, provisioning profile e revisão das permissões ATS.

@@ -81,7 +81,7 @@ async function fetchPlaylist(url) {
 }
 
 async function serveStatic(request, response, pathname) {
-  const requestedPath = pathname === '/' ? '/index.html' : pathname;
+  const requestedPath = pathname === '/' ? '/index.html' : pathname === '/iphone' ? '/iphone/index.html' : pathname.endsWith('/') ? `${pathname}index.html` : pathname;
   const filePath = path.resolve(publicDir, `.${requestedPath}`);
   const publicRoot = path.resolve(publicDir);
 

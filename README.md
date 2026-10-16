@@ -14,7 +14,7 @@ O servidor escuta em `0.0.0.0:3000` ou na porta definida por `PORT`.
 
 ## Distribuição
 
-O site oferece o APK real em `/downloads/fpr-player.apk`, compatível com celulares Android, Android TV e TV Box. A opção iPhone/iOS é exibida separadamente e detecta o dispositivo, mas permanece desativada até existir uma URL oficial de App Store ou TestFlight. Para ativá-la, preencha `IOS_DISTRIBUTION_URL` em `public/app.js` somente após publicar uma versão assinada pela Apple.
+O site oferece o APK real em `/downloads/fpr-player.apk`, compatível com celulares Android, Android TV e TV Box. A opção iPhone/iOS abre `/iphone/`, uma versão web instalável pelo Safari e reutilizada do mesmo núcleo do player. No iPhone, abra pelo Safari e use Compartilhar → Adicionar à Tela de Início. A instalação nativa pela App Store/TestFlight continua separada e só deve ser ativada depois de uma publicação assinada pela Apple.
 
 A compilação e assinatura do IPA exigem macOS/Xcode e uma conta Apple Developer. O scaffold em `ios-app/` contém o wrapper SwiftUI, a configuração inicial e as instruções para adicionar o núcleo `PlayerCore/index.html` ao target Xcode.
 

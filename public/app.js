@@ -1,4 +1,4 @@
-const IOS_DISTRIBUTION_URL = '';
+const IOS_DISTRIBUTION_URL = '/iphone/';
 const platform = (() => {
   const ua = navigator.userAgent || '';
   if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
@@ -18,7 +18,7 @@ if (platform === 'android') {
   if (deviceHint) deviceHint.textContent = 'Android detectado · APK destacado';
 } else if (platform === 'ios') {
   iosOption?.classList.add('is-recommended');
-  if (deviceHint) deviceHint.textContent = IOS_DISTRIBUTION_URL ? 'iPhone detectado · distribuição oficial' : 'iPhone detectado · iOS em preparação';
+  if (deviceHint) deviceHint.textContent = 'iPhone detectado · versão web pronta';
 } else if (deviceHint) {
   deviceHint.textContent = 'Computador detectado · escolha uma plataforma';
 }
@@ -26,9 +26,9 @@ if (platform === 'android') {
 if (IOS_DISTRIBUTION_URL) {
   iosDownload.disabled = false;
   iosDownload.removeAttribute('aria-disabled');
-  iosDownload.textContent = 'Abrir distribuição';
+  iosDownload.textContent = 'Abrir no iPhone';
   iosDownload.addEventListener('click', () => { window.location.href = IOS_DISTRIBUTION_URL; });
-  if (iosMessage) iosMessage.textContent = 'Instalação oficial disponível';
+  if (iosMessage) iosMessage.textContent = 'Abra no Safari e adicione à Tela de Início';
 }
 
 for (const option of [androidOption, iosOption]) {
