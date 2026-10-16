@@ -4,83 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#151116" />
-    <meta name="description" content="Baixe o FPR Player para Android e TV Box." />
-    <title>FPR Player — Baixe o aplicativo</title>
+    <meta name="description" content="Baixe o FPR Player para Android e acompanhe a versão oficial para iPhone." />
+    <title>FPR Player — Android e iPhone</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="/" aria-label="FPR Player">
-          <span class="brand-mark" aria-hidden="true"><span></span></span>
-          <span class="brand-copy"><strong>FPR</strong><small>PLAYER</small></span>
-        </a>
-        <nav class="site-nav" aria-label="Navegação principal">
-          <a href="#download">Download</a>
-          <a href="#ativacao">Ativação do aplicativo</a>
-        </nav>
+        <a class="brand" href="/" aria-label="FPR Player"><span class="brand-mark" aria-hidden="true"><span></span></span><span class="brand-copy"><strong>FPR</strong><small>PLAYER</small></span></a>
+        <nav class="site-nav" aria-label="Navegação principal"><a href="#download">Download</a><a href="#ativacao">Ativação do aplicativo</a></nav>
       </header>
-
-      <div class="public-notice" role="note">
-        <span class="notice-icon" aria-hidden="true">!</span>
-        <p><strong>Importante:</strong> Não fornecemos nenhum tipo de filme, canais ou série gratuito. Disponibilizamos apenas o aplicativo; todas as listas e arquivos são externos!</p>
-      </div>
-
+      <div class="public-notice" role="note"><span class="notice-icon" aria-hidden="true">!</span><p><strong>Importante:</strong> Não fornecemos nenhum tipo de filme, canais ou série gratuito. Disponibilizamos apenas o aplicativo; todas as listas e arquivos são externos!</p></div>
       <main class="download-page">
         <section class="hero-section">
-          <div class="hero-copy">
-            <p class="eyebrow">SEU ENTRETENIMENTO, NO SEU CONTROLE</p>
-            <h1>Assista dentro<br /><em>do app.</em></h1>
-            <p class="hero-description">Tenha sua experiência de vídeo em uma única tela. Baixe o FPR Player para importar e assistir suas playlists diretamente no aplicativo.</p>
-            <div class="hero-actions">
-              <a class="button button-primary" href="#download"><span>Baixar aplicativo</span><b aria-hidden="true">↓</b></a>
-              <span class="version-note">Compatível com Android e TV Box</span>
-            </div>
-          </div>
-          <div class="hero-device" aria-hidden="true">
-            <div class="device-glow"></div>
-            <div class="device-screen">
-              <div class="device-topline"><span class="mini-brand"><i></i>FPR</span><span class="mini-dot"></span></div>
-              <div class="device-copy"><small>SEU CONTEÚDO.</small><strong>Seu ritmo.</strong></div>
-              <div class="device-play"><span>▶</span></div>
-              <div class="device-lines"><i></i><i></i><i></i></div>
-            </div>
-          </div>
+          <div class="hero-copy"><p class="eyebrow">SEU ENTRETENIMENTO, NO SEU CONTROLE</p><h1>Assista dentro<br /><em>do app.</em></h1><p class="hero-description">Escolha sua plataforma e leve a experiência cinematográfica do FPR Player para a tela que você usa todos os dias.</p><div class="hero-actions"><a class="button button-primary" href="#download"><span>Escolher plataforma</span><b aria-hidden="true">↓</b></a><span class="version-note" id="deviceHint">Detectando seu dispositivo…</span></div></div>
+          <div class="hero-device" aria-hidden="true"><div class="device-glow"></div><div class="device-screen"><div class="device-topline"><span class="mini-brand"><i></i>FPR</span><span class="mini-dot"></span></div><div class="device-copy"><small>SEU CONTEÚDO.</small><strong>Seu ritmo.</strong></div><div class="device-play"><span>▶</span></div><div class="device-lines"><i></i><i></i><i></i></div></div></div>
         </section>
-
         <section class="download-panel" id="download" aria-labelledby="downloadTitle">
           <div class="section-number">01</div>
-          <div class="download-panel-copy">
-            <p class="eyebrow">DOWNLOAD OFICIAL</p>
-            <h2 id="downloadTitle">Leve o FPR Player com você</h2>
-            <p>O aplicativo é o lugar certo para inserir seu link M3U ou anexar seu arquivo de playlist. O site não armazena nem processa sua lista.</p>
-          </div>
-          <div class="download-action">
-            <a class="button button-primary button-download" id="downloadButton" href="/downloads/fpr-player.apk" download="fpr-player.apk"><span>Baixar APK</span><b aria-hidden="true">↓</b></a>
-            <small id="downloadMessage">Versão Android debug · download direto</small>
+          <div class="download-panel-copy"><p class="eyebrow">DOWNLOAD OFICIAL</p><h2 id="downloadTitle">Escolha onde usar o FPR Player</h2><p>O aplicativo é o lugar certo para inserir seu link M3U ou anexar seu arquivo de playlist. O site não armazena nem processa sua lista.</p></div>
+          <div class="platform-actions" role="group" aria-label="Plataformas disponíveis">
+            <article class="platform-card" id="androidOption" data-platform="android"><div class="platform-icon">◆</div><div><strong>Android</strong><small>Celular, Android TV e TV Box</small></div><a class="button button-primary" id="androidDownload" href="/downloads/fpr-player.apk" download="fpr-player.apk">Baixar APK <b aria-hidden="true">↓</b></a></article>
+            <article class="platform-card platform-pending" id="iosOption" data-platform="ios"><div class="platform-icon apple">●</div><div><strong>iPhone / iOS</strong><small id="iosMessage">Distribuição oficial em preparação</small></div><button class="button button-outline" id="iosDownload" type="button" disabled aria-disabled="true">Em preparação</button></article>
           </div>
         </section>
-
-        <section class="activation-panel" id="ativacao" aria-labelledby="activationTitle">
-          <div class="section-number">02</div>
-          <div class="activation-copy">
-            <p class="eyebrow">ATIVAÇÃO DO APLICATIVO</p>
-            <h2 id="activationTitle">Continue após o teste gratuito</h2>
-            <p>O FPR Player oferece um teste gratuito de 7 dias. Para continuar usando o aplicativo com acesso permanente, o valor é de <strong>R$ 20,00</strong>, mediante pagamento via PIX.</p>
-          </div>
-          <div class="pix-card">
-            <span class="pix-label">PAGAMENTO VIA PIX</span>
-            <strong>R$ 20,00</strong>
-            <p>A chave PIX será configurada pelo administrador do aplicativo.</p>
-            <button class="button button-outline" type="button" disabled>Chave PIX em preparação</button>
-          </div>
-        </section>
+        <section class="activation-panel" id="ativacao" aria-labelledby="activationTitle"><div class="section-number">02</div><div class="activation-copy"><p class="eyebrow">ATIVAÇÃO DO APLICATIVO</p><h2 id="activationTitle">Continue após o teste gratuito</h2><p>O FPR Player oferece um teste gratuito de 7 dias. Para continuar usando o aplicativo com acesso permanente, o valor é de <strong>R$ 20,00</strong>, mediante pagamento via PIX.</p></div><div class="pix-card"><span class="pix-label">PAGAMENTO VIA PIX</span><strong>R$ 20,00</strong><p>A chave PIX será configurada pelo administrador do aplicativo.</p><button class="button button-outline" type="button" disabled>Chave PIX em preparação</button></div></section>
       </main>
-
-      <footer class="footer"><span>FPR Player <b>·</b> Baixe. Instale. Assista.</span><span>Android <b>·</b> TV Box</span></footer>
+      <footer class="footer"><span>FPR Player <b>·</b> Baixe. Instale. Assista.</span><span>Android <b>·</b> iPhone em preparação</span></footer>
     </div>
   </body>
 </html>

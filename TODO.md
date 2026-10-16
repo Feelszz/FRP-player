@@ -1,26 +1,23 @@
-# TODO — VideoFlow Player
+# TODO — FPR Player Android + iOS
 
-## Importação de playlists M3U
-- [x] O aplicativo deve ter um campo para inserir uma playlist por link M3U.
-- [x] O aplicativo deve permitir carregar um arquivo M3U local.
-- [x] O carregamento deve informar estados de processamento, sucesso e erro para link inválido, falha de rede ou formato inválido.
-- [x] O carregamento remoto deve usar uma rota do servidor para evitar depender de CORS do site da playlist e aceitar somente URLs HTTP/HTTPS.
+## Núcleo existente preservado
+- [x] O APK atual foi auditado: Android nativo em Java com `WebView`, carregando o núcleo em HTML/CSS/JavaScript.
+- [x] O núcleo existente mantém importação M3U por link/arquivo, categorias, filmes, séries, temporadas, episódios, favoritos, retomada e reprodução.
 
-## Biblioteca e navegação
-- [x] O aplicativo deve ler a playlist e listar os itens encontrados.
-- [x] Cada item deve exibir as informações disponíveis, incluindo nome, grupo, logo quando existir e URL de origem de forma resumida.
-- [x] A biblioteca deve permitir busca por nome, grupo ou metadados.
-- [x] A biblioteca deve permitir filtrar por grupo e mostrar a contagem de resultados.
-- [x] O vídeo selecionado ou em reprodução deve ter indicação visual clara.
+## Compatibilidade iOS
+- [x] Preparar um wrapper iOS em Swift/SwiftUI com `WKWebView`, reutilizando o núcleo HTML/CSS/JavaScript do Android.
+- [x] Configurar reprodução inline e compatibilidade com streams HTML5/HLS no iPhone.
+- [x] Documentar sincronização do núcleo, ATS, assinatura e distribuição oficial.
+- [ ] Compilar e assinar o IPA em macOS/Xcode com uma conta Apple Developer.
+- [ ] Publicar em App Store ou TestFlight e registrar a URL oficial de distribuição.
 
-## Reprodução
-- [x] O usuário deve conseguir selecionar um item da playlist para iniciar a reprodução.
-- [x] O player deve oferecer reprodução, pausa, volume, progresso e tela cheia por meio dos controles nativos do navegador.
-- [x] O painel do player deve exibir o título e o grupo do vídeo atual.
-- [x] O aplicativo deve apresentar uma mensagem clara quando o navegador não conseguir reproduzir o formato do stream.
+## Site oficial de download
+- [x] Disponibilizar o APK Android real para celulares Android, Android TV e TV Box.
+- [x] Apresentar uma opção visual separada para iPhone/iOS.
+- [x] Detectar Android, iPhone/iPad e computador, destacando a plataforma provável e permitindo seleção manual.
+- [x] Não oferecer APK para iOS e não criar URL fictícia de App Store/TestFlight.
+- [ ] Ativar o botão iOS somente depois que a URL oficial de distribuição assinada estiver configurada.
 
-## Experiência e responsividade
-- [x] A interface deve seguir a direção visual Cinema de Bolso: escura, imersiva, com vídeo em destaque, painéis discretos e acentos laranja-quente.
-- [x] O layout deve funcionar em celular Android e em navegadores de TV Box, com alvos de toque amplos e navegação sem dependência de hover.
-- [x] O aplicativo deve oferecer uma tela vazia orientando o usuário a importar sua primeira playlist.
-- [x] O código deve funcionar no preview do navegador em uma porta HTTP configurada pelo projeto.
+## Distribuição e conformidade
+- [ ] Configurar identidade Apple, certificados, provisioning profile e revisão das permissões ATS.
+- [ ] Validar reprodução das fontes IPTV no iPhone real e revisar as regras da App Store para conteúdo e fontes externas.
