@@ -1,39 +1,22 @@
-const IOS_DISTRIBUTION_URL = '/iphone/';
-const platform = (() => {
-  const ua = navigator.userAgent || '';
-  if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
-  if (/Android/i.test(ua)) return 'android';
-  return 'desktop';
-})();
+const PIX_KEY = '53273945818';
+const activationForm = document.querySelector('#activationForm');
+const activationFeedback = document.querySelector('#activationFeedback');
+const copyPixKey = document.querySelector('#copyPixKey');
 
-const androidOption = document.querySelector('#androidOption');
-const iosOption = document.querySelector('#iosOption');
-const androidDownload = document.querySelector('#androidDownload');
-const iosDownload = document.querySelector('#iosDownload');
-const iosMessage = document.querySelector('#iosMessage');
-const deviceHint = document.querySelector('#deviceHint');
+copyPixKey?.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(PIX_KEY);
+    copyPixKey.textContent = 'Chave Pix copiada';
+  } catch {
+    copyPixKey.textContent = PIX_KEY;
+  }
+});
 
-if (platform === 'android') {
-  androidOption?.classList.add('is-recommended');
-  if (deviceHint) deviceHint.textContent = 'Android detectado · APK destacado';
-} else if (platform === 'ios') {
-  iosOption?.classList.add('is-recommended');
-  if (deviceHint) deviceHint.textContent = 'iPhone detectado · versão web pronta';
-} else if (deviceHint) {
-  deviceHint.textContent = 'Computador detectado · escolha uma plataforma';
-}
-
-if (IOS_DISTRIBUTION_URL) {
-  iosDownload.disabled = false;
-  iosDownload.removeAttribute('aria-disabled');
-  iosDownload.textContent = 'Abrir no iPhone';
-  iosDownload.addEventListener('click', () => { window.location.href = IOS_DISTRIBUTION_URL; });
-  if (iosMessage) iosMessage.textContent = 'Abra no Safari e adicione à Tela de Início';
-}
-
-for (const option of [androidOption, iosOption]) {
-  option?.addEventListener('click', (event) => {
-    if (event.target.closest('a,button')) return;
-    option.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-}
+activationForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!activationForm.reportValidity()) return;
+  const data = new FormData(activationForm);
+  const name = `${data.get('firstName')} ${data.get('lastName')}`.trim();
+  activationFeedback.textContent = `${name}, confira o valor de R$ 41,00 e pague via Pix usando a chave 53273945818. A confirmação automática será ativada quando o gateway Pix estiver conectado.`;
+  activationFeedback.classList.add('is-visible');
+});

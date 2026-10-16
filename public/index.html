@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -69,13 +70,13 @@
           <div class="activation-copy">
             <p class="eyebrow">ATIVAÇÃO DO APLICATIVO</p>
             <h2 id="activationTitle">Continue após o teste gratuito</h2>
-            <p>O FPR Player oferece um teste gratuito de 7 dias. Para continuar usando o aplicativo com acesso permanente, o valor é de <strong>R$ 20,00</strong>, mediante pagamento via PIX.</p>
+            <p>O FPR Player oferece um teste gratuito de 7 dias. Para continuar usando o aplicativo com acesso permanente, o valor é de <strong>R$ 41,00</strong>, mediante pagamento via PIX.</p><form class="activation-form" id="activationForm"><div class="activation-fields"><label>Nome<input name="firstName" type="text" autocomplete="given-name" required placeholder="Seu nome"></label><label>Sobrenome<input name="lastName" type="text" autocomplete="family-name" required placeholder="Seu sobrenome"></label><label>E-mail<input name="email" type="email" autocomplete="email" required placeholder="voce@exemplo.com"></label><label>ID do dispositivo<input name="deviceId" type="text" required placeholder="Informe o ID exibido no app"></label></div><button class="button button-primary" type="submit">Continuar para o Pix <b aria-hidden="true">→</b></button><p class="activation-feedback" id="activationFeedback" role="status"></p></form>
           </div>
           <div class="pix-card">
             <span class="pix-label">PAGAMENTO VIA PIX</span>
-            <strong>R$ 20,00</strong>
-            <p>A chave PIX será configurada pelo administrador do aplicativo.</p>
-            <button class="button button-outline" type="button" disabled>Chave PIX em preparação</button>
+            <strong>R$ 41,00</strong>
+            <p>Chave Pix para pagamento: <strong class="pix-key">53273945818</strong></p>
+            <button class="button button-outline" id="copyPixKey" type="button">Copiar chave Pix</button>
           </div>
         </section>
       </main>
