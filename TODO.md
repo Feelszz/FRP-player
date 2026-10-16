@@ -16,8 +16,7 @@
 - [x] Apresentar uma opção visual separada para iPhone/iOS.
 - [x] Detectar Android, iPhone/iPad e computador, destacando a plataforma provável e permitindo seleção manual.
 - [x] Não oferecer APK para iOS nem criar URL fictícia de App Store/TestFlight.
-- [x] Disponibilizar `/iphone/` como versão web compatível e instalável pelo Safari, com o mesmo núcleo do player.
-- [ ] Ativar uma distribuição nativa iOS somente depois que a URL oficial assinada estiver configurada.
+- [ ] Ativar uma distribuição nativa iOS somente depois que a URL oficial assinada estiver configurada; até lá, o site oferece apenas Android.
 
 ## Distribuição e conformidade
 - [ ] Configurar identidade Apple, certificados, provisioning profile e revisão das permissões ATS.
