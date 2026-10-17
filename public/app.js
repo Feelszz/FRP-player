@@ -1,9 +1,11 @@
-const PIX_KEY = '53273945818';
+const PIX_KEY = '8c3d996d-0a37-41c3-a081-ed4c7e68552a';
 const activationForm = document.querySelector('#activationForm');
 const activationFeedback = document.querySelector('#activationFeedback');
 const copyPixKey = document.querySelector('#copyPixKey');
 
+
 copyPixKey?.addEventListener('click', async () => {
+  if (!PIX_KEY) return;
   try {
     await navigator.clipboard.writeText(PIX_KEY);
     copyPixKey.textContent = 'Chave Pix copiada';
@@ -17,6 +19,8 @@ activationForm?.addEventListener('submit', (event) => {
   if (!activationForm.reportValidity()) return;
   const data = new FormData(activationForm);
   const name = `${data.get('firstName')} ${data.get('lastName')}`.trim();
-  activationFeedback.textContent = `${name}, confira o valor de R$ 41,00 e pague via Pix usando a chave 53273945818. A confirmação automática será ativada quando o gateway Pix estiver conectado.`;
+  activationFeedback.textContent = PIX_KEY
+    ? `${name}, confira o valor de R$ 41,00 e pague via Pix. Após a confirmação, o código será enviado para o e-mail informado.`
+    : `${name}, seus dados foram preenchidos. Use a chave Pix exibida nesta página para pagar R$ 41,00.`;
   activationFeedback.classList.add('is-visible');
 });
