@@ -2,7 +2,12 @@ const DEV_MODE = new URLSearchParams(window.location.search).get('dev') === '1' 
 const ACTIVATION_AMOUNT = DEV_MODE ? 'R$ 0,05' : 'R$ 41,00';
 const activationForm = document.querySelector('#activationForm');
 const activationFeedback = document.querySelector('#activationFeedback');
+const activationResult = document.querySelector('#activationResult');
+const activationResultText = document.querySelector('#activationResultText');
+const activationCodeNode = document.querySelector('#activationCode');
+const activationEmailStatus = document.querySelector('#activationEmailStatus');
 const pixQr = document.querySelector('#pixQr');
+let pollTimer;
 
 if (DEV_MODE) {
   document.querySelectorAll('.activation-copy strong, .pix-card > strong').forEach((node) => { node.textContent = ACTIVATION_AMOUNT; });
@@ -12,12 +17,49 @@ if (DEV_MODE) {
   document.title = 'FPR Player — Ambiente DEV';
 }
 
+function showFeedback(message, error = false) {
+  activationFeedback.textContent = message;
+  activationFeedback.classList.toggle('error', error);
+  activationFeedback.classList.add('is-visible');
+}
 
-activationForm?.addEventListener('submit', (event) => {
+function startPaymentPolling(orderId) {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    try {
+      const response = await fetch(`/api/asaas/payment-status?orderId=${encodeURIComponent(orderId)}`);
+      if (!response.ok) return;
+      const status = await response.json();
+      if (status.status !== 'PAID') return;
+      clearInterval(pollTimer);
+      activationResult.hidden = false;
+      activationCodeNode.textContent = status.code;
+      activationResultText.textContent = 'Pagamento confirmado pelo Asaas Sandbox. Digite este código em Configurações no aplicativo.';
+      activationEmailStatus.textContent = status.emailStatus === 'sent' ? 'O código também foi enviado por e-mail.' : 'A confirmação por e-mail será habilitada com o provedor de e-mail.';
+      showFeedback('Pagamento aprovado. Código liberado com segurança.', false);
+    } catch { /* polling transitório */ }
+  }, 3000);
+}
+
+activationForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!activationForm.reportValidity()) return;
-  const data = new FormData(activationForm);
-  const name = `${data.get('firstName')} ${data.get('lastName')}`.trim();
-  activationFeedback.textContent = `${name}, confira o QR Code e o valor de ${ACTIVATION_AMOUNT} no aplicativo do seu banco. Após a confirmação, o código será enviado para o e-mail informado.`;
-  activationFeedback.classList.add('is-visible');
+  const button = activationForm.querySelector('button[type="submit"]');
+  const data = Object.fromEntries(new FormData(activationForm));
+  button.disabled = true;
+  button.textContent = 'Gerando cobrança Pix…';
+  activationResult.hidden = true;
+  try {
+    const response = await fetch('/api/asaas/create-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...data, dev: DEV_MODE }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Não foi possível gerar a cobrança Pix.');
+    if (result.qrCode) { pixQr.src = result.qrCode; pixQr.alt = `QR Code Pix de ${ACTIVATION_AMOUNT}`; }
+    showFeedback(`QR Code gerado para ${ACTIVATION_AMOUNT}. Escaneie com seu banco e aguarde a confirmação.`, false);
+    startPaymentPolling(result.orderId);
+  } catch (error) {
+    showFeedback(error.message || 'Não foi possível gerar a cobrança Pix.', true);
+  } finally {
+    button.disabled = false;
+    button.innerHTML = 'Continuar para o Pix <b aria-hidden="true">→</b>';
+  }
 });

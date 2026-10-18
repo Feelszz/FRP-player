@@ -21,3 +21,7 @@ A compilação e assinatura do IPA exigem macOS/Xcode e uma conta Apple Develope
 ## Backend preservado
 
 A rota `/api/playlist` continua disponível no projeto para o futuro aplicativo, com limite remoto padrão de 50 MB e ajuste por `MAX_PLAYLIST_MB` entre 5 e 200 MB. A página pública não exibe formulário, biblioteca ou player.
+
+## Asaas Sandbox
+
+O site agora cria cobranças Pix dinâmicas no Asaas Sandbox. A página oficial usa R$ 41,00 e a rota `#ativacao-dev` usa R$ 0,05. O código só é liberado depois do evento `PAYMENT_RECEIVED` recebido no webhook. Consulte `docs/asaas-sandbox.md` para a configuração do endpoint e das variáveis de ambiente.
