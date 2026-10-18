@@ -44,3 +44,9 @@
 - [ ] Preservar o visual cinematográfico existente, sem trocar cores, fontes ou componentes.
 - [ ] Tornar o catálogo mais fluido com cache de metadados, carregamento lazy/assíncrono de capas, limite incremental de cards, botão “Mostrar mais”, contenção de layout e hardware acceleration no WebView.
 - [ ] Preservar busca, agrupamento de séries, temporadas, favoritos, retomada e reprodução.
+
+## Catálogos em tela própria, logo e autoplay
+
+- [ ] Ao clicar em TV ao vivo, Filmes ou Séries, abrir uma tela de catálogo independente, sem rolagem da home; as categorias devem continuar no lado esquerdo.
+- [ ] O app deve exibir o logotipo FPR Player no canto inferior esquerdo da tela inicial e utilizar o mesmo desenho como ícone principal do APK.
+- [ ] Ao clicar em um episódio dentro de uma temporada, iniciar a reprodução automaticamente sem exigir voltar ao topo e pressionar Reproduzir.
