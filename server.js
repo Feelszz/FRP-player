@@ -78,12 +78,14 @@ async function createAsaasPayment(body) {
   const lastName = String(body.lastName || '').trim();
   const email = String(body.email || '').trim().toLowerCase();
   const deviceId = String(body.deviceId || '').trim();
+  const cpfCnpj = String(body.cpfCnpj || '').replace(/\D/g, '');
   const dev = body.dev === true;
-  if (!firstName || !lastName || !email || !deviceId) throw new Error('Nome, sobrenome, e-mail e ID do dispositivo são obrigatórios.');
+  if (!firstName || !lastName || !email || !deviceId || !cpfCnpj) throw new Error('Nome, sobrenome, CPF/CNPJ, e-mail e ID do dispositivo são obrigatórios.');
+  if (![11, 14].includes(cpfCnpj.length)) throw new Error('Informe um CPF com 11 dígitos ou CNPJ com 14 dígitos.');
   if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('Informe um e-mail válido.');
-  const amount = dev ? 0.05 : 41.00;
+  const amount = dev ? 5.00 : 41.00;
   const orderId = randomUUID();
-  const customer = await asaasRequest('/customers', { method: 'POST', body: JSON.stringify({ name: `${firstName} ${lastName}`, email }) });
+  const customer = await asaasRequest('/customers', { method: 'POST', body: JSON.stringify({ name: `${firstName} ${lastName}`, email, cpfCnpj }) });
   const payment = await asaasRequest('/payments', { method: 'POST', body: JSON.stringify({
     customer: customer.id, billingType: 'PIX', value: amount,
     dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10),

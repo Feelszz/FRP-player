@@ -1,5 +1,5 @@
 const DEV_MODE = new URLSearchParams(window.location.search).get('dev') === '1' || window.location.hash === '#ativacao-dev';
-const ACTIVATION_AMOUNT = DEV_MODE ? 'R$ 0,05' : 'R$ 41,00';
+const ACTIVATION_AMOUNT = DEV_MODE ? 'R$ 5,00' : 'R$ 41,00';
 const activationForm = document.querySelector('#activationForm');
 const activationFeedback = document.querySelector('#activationFeedback');
 const activationResult = document.querySelector('#activationResult');
@@ -13,7 +13,7 @@ if (DEV_MODE) {
   document.querySelectorAll('.activation-copy strong, .pix-card > strong').forEach((node) => { node.textContent = ACTIVATION_AMOUNT; });
   const steps = document.querySelector('.activation-steps');
   if (steps) steps.innerHTML = steps.innerHTML.replaceAll('R$ 41,00', ACTIVATION_AMOUNT);
-  if (pixQr) { pixQr.src = '/assets/pix-qr-dev.svg'; pixQr.alt = 'QR Code Pix de R$ 0,05'; }
+  if (pixQr) { pixQr.src = '/assets/pix-qr-dev.svg'; pixQr.alt = 'QR Code Pix de R$ 5,00'; }
   document.title = 'FPR Player — Ambiente DEV';
 }
 
