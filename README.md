@@ -24,4 +24,4 @@ A rota `/api/playlist` continua disponível no projeto para o futuro aplicativo,
 
 ## Asaas Sandbox
 
-O site agora cria cobranças Pix dinâmicas no Asaas Sandbox. A página oficial usa R$ 41,00 e a rota `#ativacao-dev` usa R$ 0,05. O código só é liberado depois do evento `PAYMENT_RECEIVED` recebido no webhook. Consulte `docs/asaas-sandbox.md` para a configuração do endpoint e das variáveis de ambiente.
+O site agora cria cobranças Pix dinâmicas no Asaas Sandbox. A página oficial usa R$ 41,00 e a rota `#ativacao-dev` usa R$ 5,00 no Sandbox, pois o Asaas aplica valor mínimo por cobrança. O código só é liberado depois do evento `PAYMENT_RECEIVED` recebido no webhook. Consulte `docs/asaas-sandbox.md` para a configuração do endpoint e das variáveis de ambiente.
