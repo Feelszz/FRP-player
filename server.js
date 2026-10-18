@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { createHmac, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -10,6 +11,10 @@ const port = Number(process.env.PORT || 3000);
 const maxPlaylistMb = Math.min(Math.max(Number(process.env.MAX_PLAYLIST_MB || 50), 5), 200);
 const maxPlaylistBytes = maxPlaylistMb * 1024 * 1024;
 const playlistTimeoutMs = Math.min(Math.max(Number(process.env.PLAYLIST_TIMEOUT_MS || 180_000), 15_000), 300_000);
+const asaasBaseUrl = process.env.ASAAS_BASE_URL || 'https://api-sandbox.asaas.com/v3';
+const asaasApiKey = process.env.ASAAS_API_KEY || '';
+const asaasWebhookToken = process.env.ASAAS_WEBHOOK_TOKEN || '';
+const activationOrders = new Map();
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -29,11 +34,78 @@ function sendJson(response, status, payload) {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, asaas-access-token',
     'X-Content-Type-Options': 'nosniff'
   });
   response.end(JSON.stringify(payload));
+}
+
+async function readJson(request) {
+  let body = '';
+  for await (const chunk of request) {
+    body += chunk;
+    if (Buffer.byteLength(body) > 128 * 1024) throw new Error('Payload muito grande.');
+  }
+  return body ? JSON.parse(body) : {};
+}
+
+async function asaasRequest(endpoint, options = {}) {
+  if (!asaasApiKey) throw new Error('Asaas Sandbox ainda não está configurado no servidor.');
+  const response = await fetch(`${asaasBaseUrl}${endpoint}`, {
+    ...options,
+    headers: { access_token: asaasApiKey, 'Content-Type': 'application/json', ...(options.headers || {}) }
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.errors?.map((item) => item.description).join(' ') || `Asaas respondeu HTTP ${response.status}.`);
+  return payload;
+}
+
+const fprLicenseSecret = process.env.FPR_LICENSE_SECRET || 'e7b0eb76295cb97dc9dcc6e02902adcbe9db74812b13b4a13e8ff01b6a6a750a';
+function activationCode(deviceId) {
+  const digest = createHmac('sha256', Buffer.from(fprLicenseSecret, 'hex')).update(`FPR1|${String(deviceId || '').trim().toUpperCase()}`).digest();
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let bits = 0; let value = 0; let out = '';
+  for (let i = 0; i < 10; i += 1) {
+    value = (value << 8) | digest[i]; bits += 8;
+    while (bits >= 5) { out += alphabet[(value >>> (bits - 5)) & 31]; bits -= 5; value &= (1 << bits) - 1; }
+  }
+  return out.match(/.{4}/g).join('-');
+}
+
+async function createAsaasPayment(body) {
+  const firstName = String(body.firstName || '').trim();
+  const lastName = String(body.lastName || '').trim();
+  const email = String(body.email || '').trim().toLowerCase();
+  const deviceId = String(body.deviceId || '').trim();
+  const dev = body.dev === true;
+  if (!firstName || !lastName || !email || !deviceId) throw new Error('Nome, sobrenome, e-mail e ID do dispositivo são obrigatórios.');
+  if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('Informe um e-mail válido.');
+  const amount = dev ? 0.05 : 41.00;
+  const orderId = randomUUID();
+  const customer = await asaasRequest('/customers', { method: 'POST', body: JSON.stringify({ name: `${firstName} ${lastName}`, email }) });
+  const payment = await asaasRequest('/payments', { method: 'POST', body: JSON.stringify({
+    customer: customer.id, billingType: 'PIX', value: amount,
+    dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    description: `FPR Player ${dev ? 'DEV' : 'Oficial'} - ativação`, externalReference: `FPR:${orderId}`
+  }) });
+  const qr = await asaasRequest(`/payments/${payment.id}/pixQrCode`);
+  activationOrders.set(orderId, { orderId, paymentId: payment.id, amount, email, deviceId, status: 'PENDING', code: null, createdAt: Date.now() });
+  return { orderId, paymentId: payment.id, amount, status: 'PENDING', qrCode: qr.encodedImage ? `data:image/png;base64,${qr.encodedImage}` : null, payload: qr.payload || null };
+}
+
+function handleAsaasWebhook(request, response, body) {
+  if (asaasWebhookToken && request.headers['asaas-access-token'] !== asaasWebhookToken) return sendJson(response, 401, { error: 'Webhook não autorizado.' });
+  const payment = body.payment || {};
+  const orderId = String(payment.externalReference || '').replace(/^FPR:/, '');
+  const order = activationOrders.get(orderId) || [...activationOrders.values()].find((item) => item.paymentId === payment.id);
+  if (order && body.event === 'PAYMENT_RECEIVED' && Number(payment.value) === Number(order.amount)) {
+    order.status = 'PAID';
+    order.code ||= activationCode(order.deviceId);
+    order.paidAt = Date.now();
+    order.emailStatus = 'pending-email-provider';
+  }
+  return sendJson(response, 200, { received: true });
 }
 
 function isAllowedPlaylistUrl(value) {
@@ -111,15 +183,15 @@ const server = createServer(async (request, response) => {
   if (request.method === 'OPTIONS' && requestUrl.pathname.startsWith('/api/')) {
     response.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, asaas-access-token'
     });
     response.end();
     return;
   }
 
   if (request.method === 'GET' && requestUrl.pathname === '/api/health') {
-    sendJson(response, 200, { ok: true, service: 'videoflow-player' });
+    sendJson(response, 200, { ok: true, service: 'fpr-player', asaasConfigured: Boolean(asaasApiKey) });
     return;
   }
 
@@ -138,6 +210,37 @@ const server = createServer(async (request, response) => {
         ? 'O carregamento demorou demais. Verifique o link e tente novamente.'
         : error?.message || 'Não foi possível carregar a playlist.';
       sendJson(response, 502, { error: message });
+    }
+    return;
+  }
+
+  if (request.method === 'POST' && requestUrl.pathname === '/api/asaas/create-payment') {
+    try {
+      const result = await createAsaasPayment(await readJson(request));
+      sendJson(response, 201, result);
+    } catch (error) {
+      sendJson(response, 400, { error: error?.message || 'Não foi possível criar a cobrança Pix.' });
+    }
+    return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/api/activation/status') {
+    const deviceId = String(requestUrl.searchParams.get('deviceId') || '').trim().toUpperCase();
+    const order = [...activationOrders.values()].find((item) => item.deviceId.toUpperCase() === deviceId && item.status === 'PAID');
+    return sendJson(response, 200, order ? { active: true, code: order.code, paymentId: order.paymentId } : { active: false });
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/api/asaas/payment-status') {
+    const order = activationOrders.get(requestUrl.searchParams.get('orderId'));
+    if (!order) return sendJson(response, 404, { error: 'Pedido não encontrado.' });
+    return sendJson(response, 200, { status: order.status, code: order.status === 'PAID' ? order.code : null, emailStatus: order.emailStatus || null });
+  }
+
+  if (request.method === 'POST' && requestUrl.pathname === '/api/asaas/webhook') {
+    try {
+      handleAsaasWebhook(request, response, await readJson(request));
+    } catch {
+      sendJson(response, 400, { error: 'Webhook inválido.' });
     }
     return;
   }
