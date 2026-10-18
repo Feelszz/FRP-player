@@ -21,3 +21,9 @@
 ## Distribuição e conformidade
 - [ ] Configurar identidade Apple, certificados, provisioning profile e revisão das permissões ATS.
 - [ ] Validar reprodução das fontes IPTV no iPhone real e revisar as regras da App Store para conteúdo e fontes externas.
+
+## Catálogo IPTV: organização e filtros por metadados
+
+- [ ] Preservar integralmente a interface existente e alterar exclusivamente a lógica, os dados, a organização do catálogo e o funcionamento dos filtros.
+- [ ] Organizar filmes por gênero, país de produção e ano; permitir combinar esses filtros e mostrar estado vazio sem inventar conteúdo.
+- [ ] Reconhecer os gêneros solicitados e normalizar Horror → Terror e Sci-Fi → Ficção Científica.
