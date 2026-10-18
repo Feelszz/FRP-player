@@ -36,3 +36,7 @@
 ## Navegação lateral e desempenho DEV
 
 - [ ] Manter as três abas no lado esquerdo e reduzir o custo de renderização de catálogos grandes.
+
+## Catálogos em tela própria, logo e autoplay DEV
+
+- [ ] Abrir os catálogos em tela independente, usar o logo do FPR Player e iniciar o episódio selecionado automaticamente.
