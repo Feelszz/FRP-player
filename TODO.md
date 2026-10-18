@@ -40,3 +40,7 @@
 ## Catálogos em tela própria, logo e autoplay DEV
 
 - [ ] Abrir os catálogos em tela independente, usar o logo do FPR Player e iniciar o episódio selecionado automaticamente.
+
+## Rolagem do catálogo DEV
+
+- [ ] Corrigir a rolagem independente no painel de resultados da variante DEV.
