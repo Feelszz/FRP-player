@@ -27,3 +27,8 @@
 - [ ] Preservar integralmente a interface existente e alterar exclusivamente a lógica, os dados, a organização do catálogo e o funcionamento dos filtros.
 - [ ] Organizar filmes por gênero, país de produção e ano; permitir combinar esses filtros e mostrar estado vazio sem inventar conteúdo.
 - [ ] Reconhecer os gêneros solicitados e normalizar Horror → Terror e Sci-Fi → Ficção Científica.
+
+## Orientação e ativação automática DEV
+
+- [ ] O APK DEV abre horizontalmente e consulta automaticamente o status de ativação após Pix aprovado.
+- [ ] IDs não registrados pelo app são rejeitados antes da criação da cobrança Sandbox.

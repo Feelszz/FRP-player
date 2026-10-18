@@ -15,6 +15,8 @@ const asaasBaseUrl = process.env.ASAAS_BASE_URL || 'https://api-sandbox.asaas.co
 const asaasApiKey = process.env.ASAAS_API_KEY || '';
 const asaasWebhookToken = process.env.ASAAS_WEBHOOK_TOKEN || '';
 const activationOrders = new Map();
+const registeredDevices = new Map();
+const DEVICE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -62,6 +64,28 @@ async function asaasRequest(endpoint, options = {}) {
 }
 
 const fprLicenseSecret = process.env.FPR_LICENSE_SECRET || 'e7b0eb76295cb97dc9dcc6e02902adcbe9db74812b13b4a13e8ff01b6a6a750a';
+function normalizeDeviceId(value) {
+  return String(value || '').trim().toUpperCase();
+}
+function isValidDeviceId(value) {
+  return /^FPR-[A-Z0-9]{8,32}$/.test(normalizeDeviceId(value));
+}
+function markOrderPaid(order) {
+  if (!order || order.status === 'PAID') return;
+  order.status = 'PAID';
+  order.code ||= activationCode(order.deviceId);
+  order.paidAt = Date.now();
+  order.emailStatus = 'pending-email-provider';
+}
+async function refreshActivationOrder(order) {
+  if (!order || order.status === 'PAID' || !asaasApiKey) return;
+  try {
+    const payment = await asaasRequest(`/payments/${order.paymentId}`);
+    if (['RECEIVED', 'CONFIRMED'].includes(String(payment.status || '').toUpperCase()) && Number(payment.value) === Number(order.amount)) markOrderPaid(order);
+  } catch {
+    // O webhook permanece como fonte principal; o próximo polling tentará novamente.
+  }
+}
 function activationCode(deviceId) {
   const digest = createHmac('sha256', Buffer.from(fprLicenseSecret, 'hex')).update(`FPR1|${String(deviceId || '').trim().toUpperCase()}`).digest();
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -77,12 +101,16 @@ async function createAsaasPayment(body) {
   const firstName = String(body.firstName || '').trim();
   const lastName = String(body.lastName || '').trim();
   const email = String(body.email || '').trim().toLowerCase();
-  const deviceId = String(body.deviceId || '').trim();
+  let deviceId = normalizeDeviceId(body.deviceId);
   const cpfCnpj = String(body.cpfCnpj || '').replace(/\D/g, '');
   const dev = body.dev === true;
   if (!firstName || !lastName || !email || !deviceId || !cpfCnpj) throw new Error('Nome, sobrenome, CPF/CNPJ, e-mail e ID do dispositivo são obrigatórios.');
   if (![11, 14].includes(cpfCnpj.length)) throw new Error('Informe um CPF com 11 dígitos ou CNPJ com 14 dígitos.');
   if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('Informe um e-mail válido.');
+  if (!isValidDeviceId(deviceId)) throw new Error('ID do dispositivo inválido. Copie exatamente o ID exibido em Configurações no FPR Player.');
+  const registered = registeredDevices.get(deviceId);
+  if (!registered || Date.now() - registered.lastSeenAt > DEVICE_TTL_MS) throw new Error('Esse ID não foi localizado em um FPR Player ativo. Abra o aplicativo no dispositivo, entre em Configurações e copie o ID novamente.');
+  registered.lastSeenAt = Date.now();
   const amount = dev ? 5.00 : 41.00;
   const orderId = randomUUID();
   const customer = await asaasRequest('/customers', { method: 'POST', body: JSON.stringify({ name: `${firstName} ${lastName}`, email, cpfCnpj }) });
@@ -102,10 +130,7 @@ function handleAsaasWebhook(request, response, body) {
   const orderId = String(payment.externalReference || '').replace(/^FPR:/, '');
   const order = activationOrders.get(orderId) || [...activationOrders.values()].find((item) => item.paymentId === payment.id);
   if (order && body.event === 'PAYMENT_RECEIVED' && Number(payment.value) === Number(order.amount)) {
-    order.status = 'PAID';
-    order.code ||= activationCode(order.deviceId);
-    order.paidAt = Date.now();
-    order.emailStatus = 'pending-email-provider';
+    markOrderPaid(order);
   }
   return sendJson(response, 200, { received: true });
 }
@@ -216,6 +241,17 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === 'POST' && requestUrl.pathname === '/api/activation/register-device') {
+    try {
+      const body = await readJson(request);
+      const deviceId = normalizeDeviceId(body.deviceId);
+      if (!isValidDeviceId(deviceId)) return sendJson(response, 400, { registered: false, error: 'ID do dispositivo inválido.' });
+      registeredDevices.set(deviceId, { deviceId, firstSeenAt: registeredDevices.get(deviceId)?.firstSeenAt || Date.now(), lastSeenAt: Date.now() });
+      return sendJson(response, 200, { registered: true, deviceId });
+    } catch (error) {
+      return sendJson(response, 400, { registered: false, error: error?.message || 'Não foi possível registrar o dispositivo.' });
+    }
+  }
   if (request.method === 'POST' && requestUrl.pathname === '/api/asaas/create-payment') {
     try {
       const result = await createAsaasPayment(await readJson(request));
@@ -227,9 +263,10 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === 'GET' && requestUrl.pathname === '/api/activation/status') {
-    const deviceId = String(requestUrl.searchParams.get('deviceId') || '').trim().toUpperCase();
-    const order = [...activationOrders.values()].find((item) => item.deviceId.toUpperCase() === deviceId && item.status === 'PAID');
-    return sendJson(response, 200, order ? { active: true, code: order.code, paymentId: order.paymentId } : { active: false });
+    const deviceId = normalizeDeviceId(requestUrl.searchParams.get('deviceId'));
+    const order = [...activationOrders.values()].find((item) => item.deviceId === deviceId);
+    await refreshActivationOrder(order);
+    return sendJson(response, 200, order?.status === 'PAID' ? { active: true, code: order.code, paymentId: order.paymentId } : { active: false });
   }
 
   if (request.method === 'GET' && requestUrl.pathname === '/api/asaas/payment-status') {
