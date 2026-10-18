@@ -21,3 +21,13 @@
 ## Distribuição e conformidade
 - [ ] Configurar identidade Apple, certificados, provisioning profile e revisão das permissões ATS.
 - [ ] Validar reprodução das fontes IPTV no iPhone real e revisar as regras da App Store para conteúdo e fontes externas.
+
+## Catálogo IPTV: organização e filtros por metadados
+
+- [ ] Preservar integralmente a interface existente e alterar exclusivamente a lógica, os dados, a organização do catálogo e o funcionamento dos filtros.
+- [ ] Manter Filmes, Séries e TV ao vivo; organizar filmes por gênero, país de produção, ano e lançamentos; séries por gênero, país, ano, temporadas e episódios; TV ao vivo por categorias, grupos, favoritos e EPG quando disponível.
+- [ ] Disponibilizar exatamente os gêneros de filmes: Ação, Aventura, Animação, Anime, Biografia, Comédia, Comédia Romântica, Crime, Documentário, Drama, Família, Fantasia, Faroeste, Ficção Científica, Guerra, História, Mistério, Musical, Policial, Romance, Suspense, Terror, Thriller, Esporte, Religioso, Épico, Artes Marciais, Filme Noir, Cinema Independente e Curta-metragem.
+- [ ] Permitir múltiplos gêneros por filme, ocultar categorias vazias e suportar sinônimos reais como Horror → Terror e Sci-Fi → Ficção Científica.
+- [ ] Filtrar por Brasil, Portugal, Estados Unidos, Coreia do Sul, Japão, França, Índia, Espanha, Itália, Alemanha, Reino Unido, China, Hong Kong, México, Argentina, Canadá, Austrália e Rússia; “Brasil” deve usar país de produção, sem confundir com idioma.
+- [ ] Permitir combinar gênero, país e ano, atualizar resultados, limpar filtros e exibir o estado vazio existente quando não houver correspondências.
+- [ ] Preservar banco, APIs, reprodutor e integrações; aproveitar identificador, título, sinopse, pôster, ano, gêneros, países e referência de reprodução presentes na fonte M3U/Xtream.
