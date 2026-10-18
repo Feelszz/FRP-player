@@ -3,6 +3,7 @@ package com.videoflow.player;
 import android.app.Activity;
 import android.os.Bundle;
 import android.content.ActivityNotFoundException;
+import android.content.pm.ActivityInfo;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Settings;
@@ -17,6 +18,7 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         webView = new WebView(this);
         webView.setBackgroundColor(0xFF151116);
         WebSettings settings = webView.getSettings();

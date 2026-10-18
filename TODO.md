@@ -31,3 +31,9 @@
 - [ ] Filtrar por Brasil, Portugal, Estados Unidos, Coreia do Sul, Japão, França, Índia, Espanha, Itália, Alemanha, Reino Unido, China, Hong Kong, México, Argentina, Canadá, Austrália e Rússia; “Brasil” deve usar país de produção, sem confundir com idioma.
 - [ ] Permitir combinar gênero, país e ano, atualizar resultados, limpar filtros e exibir o estado vazio existente quando não houver correspondências.
 - [ ] Preservar banco, APIs, reprodutor e integrações; aproveitar identificador, título, sinopse, pôster, ano, gêneros, países e referência de reprodução presentes na fonte M3U/Xtream.
+
+## Orientação e ativação automática
+
+- [ ] O aplicativo deve abrir sempre em orientação horizontal em celulares, Android TV e TV Box.
+- [ ] O site só deve criar uma cobrança Pix quando o ID informado tiver sido registrado pelo FPR Player e corresponder exatamente ao identificador exibido no aplicativo; IDs digitados incorretamente devem ser rejeitados antes do pagamento.
+- [ ] Após a confirmação definitiva do Pix pelo Asaas, o app deve consultar o status automaticamente, validar o código para o próprio dispositivo e liberar o acesso sem exigir copiar e colar código; o código permanece como recuperação manual.

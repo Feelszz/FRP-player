@@ -34,7 +34,7 @@ function startPaymentPolling(orderId) {
       clearInterval(pollTimer);
       activationResult.hidden = false;
       activationCodeNode.textContent = status.code;
-      activationResultText.textContent = 'Pagamento confirmado pelo Asaas Sandbox. Digite este código em Configurações no aplicativo.';
+      activationResultText.textContent = 'Pagamento confirmado pelo Asaas Sandbox. O aplicativo será ativado automaticamente; este código permanece disponível como alternativa de recuperação.';
       activationEmailStatus.textContent = status.emailStatus === 'sent' ? 'O código também foi enviado por e-mail.' : 'A confirmação por e-mail será habilitada com o provedor de e-mail.';
       showFeedback('Pagamento aprovado. Código liberado com segurança.', false);
     } catch { /* polling transitório */ }
