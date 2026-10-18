@@ -32,3 +32,7 @@
 
 - [ ] O APK DEV abre horizontalmente e consulta automaticamente o status de ativação após Pix aprovado.
 - [ ] IDs não registrados pelo app são rejeitados antes da criação da cobrança Sandbox.
+
+## Navegação lateral e desempenho DEV
+
+- [ ] Manter as três abas no lado esquerdo e reduzir o custo de renderização de catálogos grandes.
