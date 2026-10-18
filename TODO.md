@@ -37,3 +37,10 @@
 - [ ] O aplicativo deve abrir sempre em orientação horizontal em celulares, Android TV e TV Box.
 - [ ] O site só deve criar uma cobrança Pix quando o ID informado tiver sido registrado pelo FPR Player e corresponder exatamente ao identificador exibido no aplicativo; IDs digitados incorretamente devem ser rejeitados antes do pagamento.
 - [ ] Após a confirmação definitiva do Pix pelo Asaas, o app deve consultar o status automaticamente, validar o código para o próprio dispositivo e liberar o acesso sem exigir copiar e colar código; o código permanece como recuperação manual.
+
+## Navegação lateral e desempenho
+
+- [ ] Manter TV ao vivo, Filmes e Séries no lado esquerdo, em coluna vertical, com categorias roláveis e foco visível para controle remoto.
+- [ ] Preservar o visual cinematográfico existente, sem trocar cores, fontes ou componentes.
+- [ ] Tornar o catálogo mais fluido com cache de metadados, carregamento lazy/assíncrono de capas, limite incremental de cards, botão “Mostrar mais”, contenção de layout e hardware acceleration no WebView.
+- [ ] Preservar busca, agrupamento de séries, temporadas, favoritos, retomada e reprodução.
