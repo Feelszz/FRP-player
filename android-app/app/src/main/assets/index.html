@@ -36,6 +36,12 @@
 
 .corner-logo{position:fixed;left:18px;bottom:14px;z-index:3;display:flex;align-items:center;gap:8px;color:#d8cbd2;font-size:9px;letter-spacing:1.4px;opacity:.9;pointer-events:none}.corner-logo img{width:30px;height:30px;border-radius:8px;object-fit:cover}.page-media .corner-logo{display:none}.detail-open .corner-logo,.page-settings .corner-logo{display:none}
 .page-media .media-browser.open{margin:0!important;min-height:0!important}.media-browser.open .media-results{min-height:0}
+
+/* Catálogo estilo streaming: cada painel rola independentemente dentro da tela */
+.page-media .media-browser.open{display:grid!important;grid-template-columns:minmax(175px,210px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:auto!important}
+.page-media .category-sidebar,.page-media .media-results{min-height:0;height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.page-media .media-results{overflow-x:hidden}
+@media(max-width:760px){.page-media .media-browser.open{display:grid!important;grid-template-columns:minmax(155px,34vw) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}.page-media .category-btn{display:block;width:100%;margin:0 0 4px;text-align:left}.page-media .category-sidebar{overflow-y:auto}.page-media .media-results{overflow-y:auto}}
 </style>
 </head>
 <body>

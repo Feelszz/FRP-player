@@ -50,3 +50,7 @@
 - [ ] Ao clicar em TV ao vivo, Filmes ou Séries, abrir uma tela de catálogo independente, sem rolagem da home; as categorias devem continuar no lado esquerdo.
 - [ ] O app deve exibir o logotipo FPR Player no canto inferior esquerdo da tela inicial e utilizar o mesmo desenho como ícone principal do APK.
 - [ ] Ao clicar em um episódio dentro de uma temporada, iniciar a reprodução automaticamente sem exigir voltar ao topo e pressionar Reproduzir.
+
+## Rolagem do catálogo
+
+- [ ] A tela independente de Filmes, Séries e TV ao vivo deve permitir rolagem vertical dentro do painel de resultados, com categorias independentes à esquerda, em TV Box, Android e celular.
