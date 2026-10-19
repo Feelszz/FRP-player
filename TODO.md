@@ -44,3 +44,7 @@
 ## Rolagem do catálogo DEV
 
 - [ ] Corrigir a rolagem independente no painel de resultados da variante DEV.
+
+## Busca superior e autoplay de episódios DEV
+
+- [ ] Aplicar busca superior e autoplay imediato de episódios na variante DEV.
