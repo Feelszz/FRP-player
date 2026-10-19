@@ -1,4 +1,4 @@
-name: Build FPR Player APK
+name: Build FPR Player APKs
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build-apk:
+  build-apks:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -24,11 +24,21 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Compilar APK debug
+      - name: Compilar APK oficial
         run: gradle --no-daemon --stacktrace assembleDebug
-      - name: Publicar APK como artefato
+      - name: Separar APK oficial
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/fpr-player-official.apk
+      - name: Preparar variante DEV
+        run: sed -i "s|/#ativacao'|/#ativacao-dev'|" app/src/main/assets/index.html
+      - name: Compilar APK DEV
+        run: gradle --no-daemon --stacktrace assembleDebug
+      - name: Separar APK DEV
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/fpr-player-dev.apk
+      - name: Publicar APKs
         uses: actions/upload-artifact@v4
         with:
-          name: fpr-player-apk
-          path: android-app/app/build/outputs/apk/debug/app-debug.apk
+          name: fpr-player-apks
+          path: |
+            android-app/app/build/outputs/apk/debug/fpr-player-official.apk
+            android-app/app/build/outputs/apk/debug/fpr-player-dev.apk
           if-no-files-found: error
