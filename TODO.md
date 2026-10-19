@@ -59,3 +59,12 @@
 
 - [ ] A barra de pesquisa deve ficar no topo da tela de catálogo, próxima aos controles, sem cobrir os cards.
 - [ ] Ao selecionar um episódio na temporada, iniciar sua reprodução imediatamente sem pressionar o botão Reproduzir.
+
+## Segurança, contato e ativador administrativo
+
+- [ ] O site deve exibir a seção Contate-nos com WhatsApp e e-mail iguais aos canais oficiais do app.
+- [ ] O QR Code deve continuar sendo criado pelo servidor/Asaas após os campos obrigatórios; o cliente não pode escolher o valor nem o destinatário.
+- [ ] A ativação automática deve liberar o aparelho somente após confirmação de pagamento pelo servidor ou por ativação administrativa autenticada.
+- [ ] O código informado no app deve ser validado remotamente para o ID do dispositivo; não confiar somente em localStorage ou em segredo embutido no APK.
+- [ ] O ativador administrativo deve ficar fora do APK e exigir FPR_ADMIN_TOKEN no servidor.
+- [ ] Nenhum APK deve conter ASAAS_API_KEY ou FPR_ADMIN_TOKEN. Proteção absoluta contra engenharia reversa não é possível em um cliente distribuído.

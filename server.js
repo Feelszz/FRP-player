@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { createHmac, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,6 +16,22 @@ const asaasApiKey = process.env.ASAAS_API_KEY || '';
 const asaasWebhookToken = process.env.ASAAS_WEBHOOK_TOKEN || '';
 const activationOrders = new Map();
 const registeredDevices = new Map();
+const stateFile = path.join(__dirname, 'data', 'activation-state.json');
+const adminToken = process.env.FPR_ADMIN_TOKEN || '';
+function loadActivationState() {
+  try {
+    const saved = JSON.parse(readFileSync(stateFile, 'utf8'));
+    for (const [key, value] of Object.entries(saved.orders || {})) activationOrders.set(key, value);
+    for (const [key, value] of Object.entries(saved.devices || {})) registeredDevices.set(key, value);
+  } catch { /* primeiro início ou estado ainda inexistente */ }
+}
+function persistActivationState() {
+  try {
+    mkdirSync(path.dirname(stateFile), { recursive: true });
+    writeFileSync(stateFile, JSON.stringify({ orders: Object.fromEntries(activationOrders), devices: Object.fromEntries(registeredDevices) }, null, 2), { mode: 0o600 });
+  } catch { /* a operação principal não falha por armazenamento opcional */ }
+}
+loadActivationState();
 const DEVICE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const mimeTypes = {
@@ -76,6 +92,7 @@ function markOrderPaid(order) {
   order.code ||= activationCode(order.deviceId);
   order.paidAt = Date.now();
   order.emailStatus = 'pending-email-provider';
+  persistActivationState();
 }
 async function refreshActivationOrder(order) {
   if (!order || order.status === 'PAID' || !asaasApiKey) return;
@@ -121,6 +138,8 @@ async function createAsaasPayment(body) {
   }) });
   const qr = await asaasRequest(`/payments/${payment.id}/pixQrCode`);
   activationOrders.set(orderId, { orderId, paymentId: payment.id, amount, email, deviceId, status: 'PENDING', code: null, createdAt: Date.now() });
+  persistActivationState();
+  persistActivationState();
   return { orderId, paymentId: payment.id, amount, status: 'PENDING', qrCode: qr.encodedImage ? `data:image/png;base64,${qr.encodedImage}` : null, payload: qr.payload || null };
 }
 
@@ -135,6 +154,20 @@ function handleAsaasWebhook(request, response, body) {
   return sendJson(response, 200, { received: true });
 }
 
+function constantTimeTokenMatches(request) {
+  if (!adminToken) return false;
+  const supplied = String(request.headers['x-fpr-admin-token'] || '');
+  const a = Buffer.from(supplied); const b = Buffer.from(adminToken);
+  return a.length === b.length && createHmac('sha256', Buffer.from('fpr-admin-check')).update(a).digest('hex') === createHmac('sha256', Buffer.from('fpr-admin-check')).update(b).digest('hex');
+}
+function findActiveOrder(deviceId) {
+  return [...activationOrders.values()].find((item) => item.deviceId === deviceId && item.status === 'PAID');
+}
+function verifyActivationCode(deviceId, code) {
+  const normalized = String(code || '').trim().toUpperCase();
+  const order = findActiveOrder(deviceId);
+  return Boolean(order && normalized === String(order.code || '').toUpperCase());
+}
 function isAllowedPlaylistUrl(value) {
   try {
     const parsed = new URL(value);
@@ -247,6 +280,7 @@ const server = createServer(async (request, response) => {
       const deviceId = normalizeDeviceId(body.deviceId);
       if (!isValidDeviceId(deviceId)) return sendJson(response, 400, { registered: false, error: 'ID do dispositivo inválido.' });
       registeredDevices.set(deviceId, { deviceId, firstSeenAt: registeredDevices.get(deviceId)?.firstSeenAt || Date.now(), lastSeenAt: Date.now() });
+      persistActivationState();
       return sendJson(response, 200, { registered: true, deviceId });
     } catch (error) {
       return sendJson(response, 400, { registered: false, error: error?.message || 'Não foi possível registrar o dispositivo.' });
@@ -264,11 +298,36 @@ const server = createServer(async (request, response) => {
 
   if (request.method === 'GET' && requestUrl.pathname === '/api/activation/status') {
     const deviceId = normalizeDeviceId(requestUrl.searchParams.get('deviceId'));
-    const order = [...activationOrders.values()].find((item) => item.deviceId === deviceId);
+    const order = [...activationOrders.values()].filter((item) => item.deviceId === deviceId).sort((a, b) => b.createdAt - a.createdAt)[0];
     await refreshActivationOrder(order);
-    return sendJson(response, 200, order?.status === 'PAID' ? { active: true, code: order.code, paymentId: order.paymentId } : { active: false });
+    return sendJson(response, 200, order?.status === 'PAID' ? { active: true, code: order.code, paymentId: order.paymentId, source: order.paymentId ? 'asaas' : 'admin' } : { active: false });
   }
 
+  if (request.method === 'POST' && requestUrl.pathname === '/api/activation/verify') {
+    try {
+      const body = await readJson(request);
+      const deviceId = normalizeDeviceId(body.deviceId);
+      if (!isValidDeviceId(deviceId) || !verifyActivationCode(deviceId, body.code)) return sendJson(response, 403, { valid: false, error: 'Ativação não encontrada para este dispositivo.' });
+      return sendJson(response, 200, { valid: true });
+    } catch (error) {
+      return sendJson(response, 400, { valid: false, error: error?.message || 'Não foi possível validar a ativação.' });
+    }
+  }
+  if (request.method === 'POST' && requestUrl.pathname === '/api/admin/activate') {
+    if (!constantTimeTokenMatches(request)) return sendJson(response, 401, { error: 'Não autorizado.' });
+    try {
+      const body = await readJson(request);
+      const deviceId = normalizeDeviceId(body.deviceId);
+      if (!isValidDeviceId(deviceId)) return sendJson(response, 400, { error: 'ID do dispositivo inválido.' });
+      const orderId = `ADMIN-${randomUUID()}`;
+      const order = { orderId, paymentId: null, amount: 0, email: '', deviceId, status: 'PAID', code: activationCode(deviceId), createdAt: Date.now(), source: 'admin', note: String(body.note || '').slice(0, 200) };
+      activationOrders.set(orderId, order);
+      persistActivationState();
+      return sendJson(response, 201, { activated: true, deviceId, code: order.code, orderId });
+    } catch (error) {
+      return sendJson(response, 400, { error: error?.message || 'Não foi possível ativar o dispositivo.' });
+    }
+  }
   if (request.method === 'GET' && requestUrl.pathname === '/api/asaas/payment-status') {
     const order = activationOrders.get(requestUrl.searchParams.get('orderId'));
     if (!order) return sendJson(response, 404, { error: 'Pedido não encontrado.' });
