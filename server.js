@@ -139,7 +139,6 @@ async function createAsaasPayment(body) {
   const qr = await asaasRequest(`/payments/${payment.id}/pixQrCode`);
   activationOrders.set(orderId, { orderId, paymentId: payment.id, amount, email, deviceId, status: 'PENDING', code: null, createdAt: Date.now() });
   persistActivationState();
-  persistActivationState();
   return { orderId, paymentId: payment.id, amount, status: 'PENDING', qrCode: qr.encodedImage ? `data:image/png;base64,${qr.encodedImage}` : null, payload: qr.payload || null };
 }
 
@@ -182,18 +181,30 @@ async function fetchPlaylist(url) {
   const timeout = setTimeout(() => controller.abort(), playlistTimeoutMs);
 
   try {
-    const upstream = await fetch(url, {
-      signal: controller.signal,
-      redirect: 'follow',
-      headers: {
-        'Accept': 'application/x-mpegURL, application/vnd.apple.mpegurl, text/plain, */*',
-        'Accept-Encoding': 'gzip, deflate',
-        'User-Agent': 'FPR-Player/1.0'
+    const candidates = [...new Set([url, url.replace(/^https:/i, 'http:')])];
+    let upstream;
+    let lastError;
+    for (const candidate of candidates) {
+      try {
+        upstream = await fetch(candidate, {
+          signal: controller.signal,
+          redirect: 'follow',
+          headers: {
+            'Accept': 'application/x-mpegURL, application/vnd.apple.mpegurl, text/plain, */*',
+            'Accept-Encoding': 'gzip, deflate',
+            'User-Agent': 'FPR-Player/1.0'
+          }
+        });
+        if (upstream.ok) break;
+        lastError = new Error(`A playlist respondeu com HTTP ${upstream.status}.`);
+      } catch (error) {
+        lastError = error;
       }
-    });
+    }
+    if (!upstream) throw lastError || new Error('Não foi possível conectar ao servidor da playlist.');
 
     if (!upstream.ok) {
-      throw new Error(`A playlist respondeu com HTTP ${upstream.status}.`);
+      throw lastError || new Error(`A playlist respondeu com HTTP ${upstream.status}.`);
     }
 
     const length = Number(upstream.headers.get('content-length') || 0);
