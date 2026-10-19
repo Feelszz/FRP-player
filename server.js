@@ -1,7 +1,8 @@
 import { createServer } from 'node:http';
 import { createHmac, randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,12 +11,13 @@ const publicDir = path.join(__dirname, 'public');
 const port = Number(process.env.PORT || 3000);
 const maxPlaylistMb = Math.min(Math.max(Number(process.env.MAX_PLAYLIST_MB || 50), 5), 200);
 const maxPlaylistBytes = maxPlaylistMb * 1024 * 1024;
-const playlistTimeoutMs = Math.min(Math.max(Number(process.env.PLAYLIST_TIMEOUT_MS || 180_000), 15_000), 300_000);
+const playlistTimeoutMs = Math.min(Math.max(Number(process.env.PLAYLIST_TIMEOUT_MS || 300_000), 15_000), 600_000);
 const asaasBaseUrl = process.env.ASAAS_BASE_URL || 'https://api-sandbox.asaas.com/v3';
 const asaasApiKey = process.env.ASAAS_API_KEY || '';
 const asaasWebhookToken = process.env.ASAAS_WEBHOOK_TOKEN || '';
 const activationOrders = new Map();
 const registeredDevices = new Map();
+const playlistJobs = new Map();
 const stateFile = path.join(__dirname, 'data', 'activation-state.json');
 const adminToken = process.env.FPR_ADMIN_TOKEN || '';
 function loadActivationState() {
@@ -177,50 +179,47 @@ function isAllowedPlaylistUrl(value) {
 }
 
 async function fetchPlaylist(url) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), playlistTimeoutMs);
-
-  try {
-    const candidates = [...new Set([url, url.replace(/^https:/i, 'http:')])];
-    let upstream;
-    let lastError;
-    for (const candidate of candidates) {
-      try {
-        upstream = await fetch(candidate, {
-          signal: controller.signal,
-          redirect: 'follow',
-          headers: {
-            'Accept': 'application/x-mpegURL, application/vnd.apple.mpegurl, text/plain, */*',
-            'Accept-Encoding': 'gzip, deflate',
-            'User-Agent': 'FPR-Player/1.0'
-          }
-        });
-        if (upstream.ok) break;
-        lastError = new Error(`A playlist respondeu com HTTP ${upstream.status}.`);
-      } catch (error) {
-        lastError = error;
-      }
+  const candidates = [...new Set([url, url.replace(/^https:/i, 'http:')])];
+  let lastError;
+  for (const candidate of candidates) {
+    const tempFile = path.join('/tmp', `fpr-playlist-${randomUUID()}.m3u`);
+    try {
+      await new Promise((resolve, reject) => {
+        const child = spawn('curl', ['-L', '--fail', '--silent', '--show-error', '--compressed', '--max-time', String(Math.ceil(playlistTimeoutMs / 1000)), '-A', 'VLC/3.0.20', '-H', 'Accept: application/x-mpegURL, application/vnd.apple.mpegurl, text/plain, */*', '-o', tempFile, candidate]);
+        let stderr = '';
+        child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
+        child.on('error', reject);
+        child.on('close', (code) => code === 0 ? resolve() : reject(new Error(stderr.trim() || `A playlist respondeu com HTTP ${code}.`)));
+      });
+      const size = statSync(tempFile).size;
+      if (size > maxPlaylistBytes) throw new Error(`A playlist é maior que o limite de ${maxPlaylistMb} MB.`);
+      const text = await readFile(tempFile, 'utf8');
+      if (Buffer.byteLength(text, 'utf8') > maxPlaylistBytes) throw new Error(`A playlist é maior que o limite de ${maxPlaylistMb} MB.`);
+      return { text, finalUrl: candidate };
+    } catch (error) {
+      lastError = error;
+    } finally {
+      try { unlinkSync(tempFile); } catch {}
     }
-    if (!upstream) throw lastError || new Error('Não foi possível conectar ao servidor da playlist.');
-
-    if (!upstream.ok) {
-      throw lastError || new Error(`A playlist respondeu com HTTP ${upstream.status}.`);
-    }
-
-    const length = Number(upstream.headers.get('content-length') || 0);
-    if (length > maxPlaylistBytes) {
-      throw new Error(`A playlist é maior que o limite de ${maxPlaylistMb} MB.`);
-    }
-
-    const text = await upstream.text();
-    if (Buffer.byteLength(text, 'utf8') > maxPlaylistBytes) {
-      throw new Error(`A playlist é maior que o limite de ${maxPlaylistMb} MB.`);
-    }
-
-    return { text, finalUrl: upstream.url || url };
-  } finally {
-    clearTimeout(timeout);
   }
+  throw lastError || new Error('Não foi possível conectar ao servidor da playlist.');
+}
+
+function startPlaylistJob(sourceUrl) {
+  const jobId = randomUUID();
+  const job = { jobId, status: 'DOWNLOADING', createdAt: Date.now(), text: null, finalUrl: null, error: null };
+  playlistJobs.set(jobId, job);
+  fetchPlaylist(sourceUrl).then((playlist) => {
+    job.status = 'READY';
+    job.text = playlist.text;
+    job.finalUrl = playlist.finalUrl;
+  }).catch((error) => {
+    job.status = 'ERROR';
+    job.error = error?.name === 'AbortError' ? 'O carregamento demorou demais. Verifique o link e tente novamente.' : error?.message || 'Não foi possível carregar a playlist.';
+  });
+  const cleanup = setTimeout(() => playlistJobs.delete(jobId), 15 * 60 * 1000);
+  cleanup.unref?.();
+  return job;
 }
 
 async function serveStatic(request, response, pathname) {
@@ -283,6 +282,21 @@ const server = createServer(async (request, response) => {
       sendJson(response, 502, { error: message });
     }
     return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/api/playlist/start') {
+    const sourceUrl = requestUrl.searchParams.get('url')?.trim();
+    if (!sourceUrl || !isAllowedPlaylistUrl(sourceUrl)) return sendJson(response, 400, { error: 'Informe um link HTTP ou HTTPS válido para a playlist.' });
+    const job = startPlaylistJob(sourceUrl);
+    return sendJson(response, 202, { jobId: job.jobId, status: job.status });
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/api/playlist/status') {
+    const job = playlistJobs.get(requestUrl.searchParams.get('jobId'));
+    if (!job) return sendJson(response, 404, { status: 'ERROR', error: 'Tarefa de playlist não encontrada ou expirada.' });
+    if (job.status === 'READY') return sendJson(response, 200, { status: job.status, text: job.text, finalUrl: job.finalUrl });
+    if (job.status === 'ERROR') return sendJson(response, 200, { status: job.status, error: job.error });
+    return sendJson(response, 200, { status: job.status });
   }
 
   if (request.method === 'POST' && requestUrl.pathname === '/api/activation/register-device') {
