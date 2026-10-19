@@ -24,6 +24,9 @@ public class MainActivity extends Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        // A interface é carregada de file:// e precisa consultar as APIs HTTPS do FPR.
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
