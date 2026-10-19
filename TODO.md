@@ -54,3 +54,8 @@
 ## Rolagem do catálogo
 
 - [ ] A tela independente de Filmes, Séries e TV ao vivo deve permitir rolagem vertical dentro do painel de resultados, com categorias independentes à esquerda, em TV Box, Android e celular.
+
+## Busca superior e autoplay de episódios
+
+- [ ] A barra de pesquisa deve ficar no topo da tela de catálogo, próxima aos controles, sem cobrir os cards.
+- [ ] Ao selecionar um episódio na temporada, iniciar sua reprodução imediatamente sem pressionar o botão Reproduzir.
